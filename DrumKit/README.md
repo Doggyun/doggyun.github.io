@@ -83,6 +83,7 @@
 **即使是播放狀態，audio2.currentTime印出來還是只有0秒**。
 <p>
 <img src="img/constrols03.png" width="300" height="100"/>
+
 而等**onfulfilled()執行完畢後播放器會直接跳到1.2s後開始播放**。
 
     <audio data-key="65" preload="metadata" controls src="sounds/LOVE.mp3"></audio>
@@ -116,9 +117,11 @@
 在**斷點執行到let play = audio2.play()時，它也會播放約1.2s的聲音後停止**。
 <p>
 <img src="img/constrols01.png" width="300" height="100"/>
+
 **但播放器還沒有開始播放，還是在0秒與pause的狀態**。
 <p>
 <img src="img/constrols03.png" width="300" height="100"/>
+
 **也是一樣直到play() Promise實現，異步執行onfulfilled()後才會轉變成開始播放的狀態**。
 
 
