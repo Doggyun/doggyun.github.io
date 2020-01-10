@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>萬年曆</title>
+    <style>
+        html {
+            text-align: center;
+            background: #f8f3d4;
+        }
+        
+        .calendar {
+            margin: 30px 0;
+        }
+        
+        .WeekDay,
+        .week {
+            display: flex;
+            /*display: flex[是針對flex container (parent)的屬性]: flex-direction | justify-content | align-items | align-content (主軸方向:row/column|沿主軸的對齊方式|沿側軸的對齊方式|子item裡沿側軸的對齊方式)*/
+            border-bottom: 1px solid rgb(156, 156, 156);
+        }
+        
+        .WeekDay>div {
+            flex: 1 1 0%;
+            /*flex[是針對flex items (children)的屬性]是這3個值的縮寫: flex-grow(預設) | flex-shrink | flex-basis (依比例分配container剩餘空間值|container空間不夠的狀態下，依比例縮小值|依主軸的水平或垂直排版，尺寸值相當於width與height)*/
+            /*它們的預設值-->flex-grow: 0、flex-shrink: 1、flex-basis: auto。*/
+            line-height: 30px;
+            /*文字行高*/
+        }
+        
+        .week {
+            border-right: 1px solid rgb(156, 156, 156);
+        }
+        
+        .week>div {
+            position: relative;
+            flex: 1 1 0%;
+            line-height: 30px;
+            height: 90px;
+            border-left: 1px solid rgb(156, 156, 156);
+        }
+        
+        .week>div::before {
+            position: absolute;
+            content: attr(data-date);
+            /*data-*;值會傳到這裡*/
+            top: 0;
+            right: 0;
+            display: block;
+            width: 30px;
+            border-left: 1px solid rgb(156, 156, 156);
+            border-bottom: 1px solid rgb(156, 156, 156);
+        }
+        
+        .isToday::before {
+            color: #fff;
+            background-color: #f6416c;
+        }
+        
+        .other {
+            color: rgb(151, 150, 150);
+            background-color: rgb(221, 221, 221);
+        }
+        
+        .WeekDay {
+            background: #ffde7d;
+        }
+    </style>
+
+</head>
+
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <div id="app">
+        <h1>{{calendar.year}} 年{{calendar.month+1}} 月</h1>
+        <div class="button">
+            <!--v-on的縮寫-->
+            <button @click="lastNextYear(-1)">上一年</button>
+            <!--js呼叫傳參數-->
+            <button @click="lastNextMonth(-1)">上個月</button>
+            <button @click="setToday">今天</button>
+            <button @click="lastNextYear(1)">下一年</button>
+            <button @click="lastNextMonth(1)">下個月</button>
+        </div>
+        <div class="calendar">
+            <div class="WeekDay">
+                <div>日</div>
+                <div>一</div>
+                <div>二</div>
+                <div>三</div>
+                <div>四</div>
+                <div>五</div>
+                <div>六</div>
+            </div>
+
+            <div class="week" v-for="a in 6">
+                <!--a=1,2,3,4,5,6-->
+                <!--b=1,2,3,4,5,6,7-->
+                <div class="day" v-for="b in 7" v-bind:data-date="calendarMonth[(b-1)+(a-1)*7].date" v-bind:class="{                    
+                    isToday:calendarMonth[(a-1)*7+(b-1)].year=== today.year&&calendarMonth[(a-1)*7+(b-1)].month=== today.month &&
+                          calendarMonth[(a-1)*7+(b-1)].date=== today.date,
+                    other:calendarMonth[(a-1)*7+(b-1)].month !==calendar.month , }">
+                    <!--v-bind:class:日期上色-->
+
+                    <!--v-bind是單向綁定，目的是串起兩端的連結;改變了Vue實體中的資料，頁面dom中的值就會被改變，反之不成立-->
+                    <!--v-bind在綁定class與style屬性時，值除了是字串之外，還可以是物件與陣列-->
+                    <!--class的存在，取決於其是否為真值(truty) ; 根據條件切換列表中的class。-->
+                </div>
+
+            </div>
+
+
+        </div>
+        <!--data-*(*是一個可自定義的名稱)自定義屬性-->
+        <!--行列轉換個數公式，求calendarMonth陣列裡面拿哪一筆資料，7是代表1週的個數-->
+
+    </div>
+
+    <script>
+        let vm = new Vue({
+            el: '#app',
+            data: {
+                today: { //初始值
+                    year: 0,
+                    month: 0,
+                    date: 0,
+                    day: 0
+                },
+                calendar: { //初始值
+                    year: 0,
+                    month: 0,
+                    date: 0,
+                    day: 0,
+                },
+
+            },
+
+            beforeCreate: function() {
+
+                console.log(document.querySelector(".calendar")); //這時候的V(html)好像不會運作?
+
+            },
+            created: function() {
+
+                console.log(document.querySelector(".day"));
+            },
+            beforeMount: function() {
+
+                console.log(document.querySelector(".day"));
+            },
+
+            mounted: function() { //在mounted階段執行setToday()
+                this.setToday();
+                console.log(document.querySelector(".day"));
+                console.log(document.querySelector(".calendar")); // VUE實體掛上 V運作
+            },
+
+
+            methods: {
+                setToday: function() { //自動取得今天年/月/日/星期的資料
+
+                    const date = new Date(); //建立date物件;不設參數時預設為當天本地日期。
+
+                    //console.log(typeof(date)); //object
+                    //console.dir(date); //Sun Aug 18 2019 00:29:41 GMT+0800 (台北標準時間)
+                    //console.log(typeof(date.getFullYear())); //number--2019
+
+                    this.today.year = this.calendar.year = date.getFullYear(); //年
+                    this.today.month = this.calendar.month = date.getMonth(); //0(1月)~11(12月)
+                    this.today.date = this.calendar.date = date.getDate(); //日 1~31
+                    this.today.day = this.calendar.day = date.getDay(); //星期 0(星期日)~6(星期六)
+
+                },
+                lastNextYear: function(fix) {
+                    this.calendar.year += fix; //加法賦值運算子。 this.clander.year =  this.clander.year + fix;
+                },
+                lastNextMonth: function(fix) { //在手動新增或減月份時會有自動使年份跳號的問題
+                    //var a = 1;
+                    //let b = 2;
+                    let changeMonth = this.calendar.month + fix; //11+1=12 //0-1=-1
+                    if (changeMonth > 11) { //如果月份往前超過12月，則年份+1，月份跳回1月開始
+                        this.lastNextYear(1); //變成明年
+                        this.calendar.month = 0; //1月
+
+                        //console.log(a); //1
+                        //console.log(b); //2
+                    } else if (changeMonth < 0) { //如果月份往後小於1月，
+                        this.lastNextYear(-1); //變成去年
+                        this.calendar.month = 11; //12月
+                    } else { //月份改變，星期也跟著改變
+                        //console.log(a); //undefined 若是在(changeMonth > 11)裡設置成let a=2，則 a is not defined.
+                        //console.log(b); //若是在(changeMonth > 11)裡設置成let b=2，則 b is not defined.
+                        this.calendar.month = changeMonth;
+                        console.log(this.calendar.date);
+                        let newDate = new Date(this.calendar.year, this.calendar.month, this.calendar.date);
+                        let changedDay = newDate.getDay();
+                        console.log(newDate);
+                        this.calendar.day = changedDay;
+                    }
+
+                },
+                //Methods裡不能用箭頭函數，因為箭頭函數綁定了父層的上下文，所以this不會像所想的一樣指向Vue實體，而是會變undefined。
+            },
+
+            computed: { //created階段computed就會自動觸發然後(因為$data完成)緩存起來，之後data更改時再重新求值。
+                calendarFirstDate: function() { //計算當月的日曆上第一個開始排版的非當月日子
+
+                /*let getDate = (this.calendar.date - this.calendar.day) % 7-7 ;
+                let sundayDate = new Date(this.calendar.year, this.calendar.month, getDate); */
+
+                let oneDate = new Date(this.calendar.year, this.calendar.month, 1);
+                let sundayDate = new Date(this.calendar.year, this.calendar.month, 1- oneDate.getDay());
+
+                    return {
+                        year: sundayDate.getFullYear(),
+                        month: sundayDate.getMonth(),
+                        date: sundayDate.getDate(),
+                        day: sundayDate.getDay(),
+                    };
+
+                },
+                calendarMonth: function() { //計算42天的號碼
+
+                    const data = [];
+                    let date
+                    for (i = 0; i < 42; i++) { //7*6=42天  
+
+                        date = new Date(this.calendarFirstDate.year, this.calendarFirstDate.month, this.calendarFirstDate.date + i), //準備當月第一個非當月的日子要排版的資料，一個月可以排42天
+
+                            data.push({
+                                year: date.getFullYear(),
+                                month: date.getMonth(),
+                                date: date.getDate(),
+                                day: date.getDay(),
+                            })
+
+                    };
+                    //console.log(data);
+                    return data;
+                },
+
+            },
+
+        })
+    </script>
+</body>
+
+</html>

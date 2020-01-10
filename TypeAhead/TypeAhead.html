@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Type Ahead 👀</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <form class="search-form">
+        <input type="text" class="search" placeholder="City or State">
+        <ul class="suggestions">
+            <li>Filter for a city</li>
+            <li>or a state</li>
+        </ul>
+    </form>
+    <script>
+        const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+        const cities = [];
+
+        /*
+        同步callBack: 把function當參數傳到另一個function裡 -> 等待時機後執行。
+        不同步callBack:滿足某一條件後執行。
+        */
+
+        /*這裡解釋為什麼json()會return一個Promise
+        Q:why does response.json() return a promise?
+        A:Calling .json() gets you another promise for the body of the http response that is yet to be loaded;
+        The header can already be processed while the body is not yet finished,the promise waits for the body data to load.  
+        */
+
+        //Promise是一個用來處理非同步事件的方法，是對未來不可預期的事件的一個承諾。
+        //傳給then()的函式會在Promise resolve後被異步執行。
+        //fetch()的Promise在發送出http request 等待，且server回應(成功 or 404或是一些錯誤等請求失敗)之後，promise的狀態都會是resolved(只有遇到 "網路錯誤" 才呈現rejected)。
+        //fetch()、then()會回傳Promise物件
+        let promise = fetch(endpoint); //Window.fetch(endpoint)
+
+        console.log(promise); //{<pending>} "pending" undefined
+
+        promise.then((response) => { //onFulfilled 方法來定義作業成功時的處理方式(不同步、微任務)。
+
+                console.log(promise); //{<resolved>} "resolved" Response
+
+                //console.log(typeof(fetch(endpoint)));//object
+                //console.log(response); //這是一個response物件，而我們要的資源都存在response.body裡，是一個ReadableStream物件(無法直接讀取資料內容)。
+                //console.log(response.bodyUsed); //false
+                //console.log(response.json()); //Body.json()(response method)，使用json來讀取ReadableStream物件;返回一個promise;resolved value:Array(1000)。
+                //body(ReadableStream)只能被讀取一次，bodyUsed的值會被修改成true，之後不能再讀取了。
+                //console.log(response.bodyUsed); //true; console.log(response.json())讀過一次了。            
+
+                if (response.ok) { //用response.ok(property)來判斷fetch請求是否成功。如果ok是true，表示狀態碼在200~299之間。
+                    return response.json(); //return一個Promise物件
+                } else {
+                    console.log("error"); //請求失敗會印出這行。
+                }
+            })
+            .then((data) => {
+
+                /*這裡解釋為什麼必須要使用展開運算子展開data才能push進空陣列裡。
+
+                //console.log(data); //Array(1000)
+                //cities.push(data); //[Array(1000)]把一個array物件塞進空陣列裡，變成陣列中的陣列。
+                //console.log(cities);
+                //console.log(...data); //無序列的物件們;展開運算子會把一組陣列展開，變成一筆一筆獨立的個別值。
+                
+                */
+
+                cities.push(...data); //Array(1000)//array.push()新添加array的最後的一筆資料;array.pop()刪除array的最後一筆資料。
+
+
+                /*這裡解釋操作陣列時會有的小陷阱
+               
+                let a1 = ['x', 'y'];
+                let a2 = ['w', a1, 'z'];
+                console.log(a2);
+                (3) ["w", Array(2), "z"]
+                    0: "w"
+                    1: (2) ["x", "y"]
+                    2: "z"
+                    length: 3
+                    __proto__: Array(0)
+
+                let a1 = ['x', 'y'];
+                let a2 = ['w', ...a1, 'z'];
+                console.log(a2);
+                (4) ["w", "x", "y", "z"]
+                    0: "w"
+                    1: "x"
+                    2: "y"
+                    3: "z"
+                    length: 4
+                    __proto__: Array(0)
+
+
+                let family=[{"name":"Andy","age":"24","hometown":"Taiwan"}];
+                console.log(family);
+                   
+                [{…}]
+                    0: age: "24"
+                       hometown: "Taiwan"
+                       name: "Andy"
+                       __proto__: Object
+                       length: 1
+                    __proto__: Array(0)
+                */
+                console.log(promise); //{<resolved>} "resolved" Response
+            });
+
+
+
+        //用js來操作瀏覽器提供的DOM api
+        let searchInput = document.querySelector('.search');
+        //console.log(searchInput); //<input type="text" class="search" placeholder="City or State">
+        //console.dir(searchInput); //input.search物件( HTMLInputElement的實例)
+
+        searchInput.addEventListener('keyup', e => { //使用者釋放某一個按鍵時觸發
+
+            //第一步 拿陣列資料去過濾使用者輸入的鍵碼(ex.n)
+            //Array.filter()-->把某些元素過濾掉，然後剩下的元素組成新陣列return
+            let filterArray = cities.filter(place => { //有序的當前資料呼叫callBack一次來進行條件過濾(運作原理同forEach)，所以在這裡callback要被呼叫1000次
+
+                //正則表達式-->設定過濾規則-->使用者輸入的鍵碼
+                let regex = new RegExp(e.target.value, 'gi'); //'g'全局匹配 'i'不分大小寫
+                //console.log(regex);/n/gi
+                //console.dir(regex);/n/gi物件
+
+                /*搭配RegExp的方法
+                String.match()-->使比對規則，找出符合規則的字串，然後回傳字串陣列
+                String.replace()-->使比對規則，符合規則的字串被第二個參數取代
+                */
+
+                //OR邏輯運算子-->只要其中一個的條件成立(例如只要第一個成立，後面條件就不會運算了)，就回傳true
+                //console.log(place.city.match(regex) || place.state.match(regex)); //["N"]-->邏輯運算子會轉換為true
+
+
+                //有使用者輸入的鍵碼的內容的元素保留下來放進新陣列裡
+                return place.city.match(regex) || place.state.match(regex); //filter()根據回傳值是true還是false決定保留還是丟棄該元素(保留的元素放進新陣列裡)。
+            })
+
+            console.log(filterArray); //資料篩選完後的新陣列
+
+            //第二步 將過濾過的資料hightlight           
+            let list = filterArray.map(place => { //跟forEach差別是map會構成一個新的陣列
+                let regex = new RegExp(e.target.value, 'gi');
+
+                //字串模板語法:${}-->把變數變成字串:expression.toString()
+                //js除了操作節點物件改變html之外，js操控的html字串也會轉變成節點物件。
+                let cityHight = place.city.replace(regex, `<span class="h1" style="background:#ffc600">${e.target.value}</span>`);
+                //console.log(cityHight); //<span class="h1" style="background:#ffc600">n</span>ew York
+                //console.log(typeof(cityHight)); //string
+                //console.log(cityHight); //Chicago === console.log(place.city)
+
+                let stateHight = place.state.replace(regex, `<span class="h1"style="background:#ffc600">${e.target.value}</span>`);
+
+                return `<li><span>${cityHight},${stateHight}</span></li>` //將字串傳出去，然後map()會push進新陣列裡再return
+
+            });
+            console.log(list);
+            let listString = list.join(''); //join(''); //join()會將陣列（或類陣列）中所有的元素連接、合併成一個字串:如果參數是空字串，合併後，元素間不會有任何字元。
+            console.log(listString);
+            //console.log(typeof(listString));//string
+
+
+            let suggestions = document.querySelector('.suggestions');
+            //innerHTML是包含tag的html字串
+            suggestions.innerHTML = listString; //將html字串更改節點物件的innerHTML //innerHTML使用上要小心XSS攻擊。
+            //console.dir(suggestions);
+
+        });
+    </script>
+</body>
+
+</html>

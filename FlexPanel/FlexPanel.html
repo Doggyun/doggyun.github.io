@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Flex Panels 💪</title>
+    <link href='https://fonts.googleapis.com/css?family=Amatic+SC' rel='stylesheet' type='text/css'>
+</head>
+
+<body>
+    <style>
+        html {
+            /*box-sizing:計算CSS所指定的width和height時，是否有將padding和border大小計算在內*/
+            box-sizing: border-box;
+            /*content-box(預設值):CSS所指定元素的width和height(實際元素大小)沒有將border/padding包含在內(往外擴張)*/
+            /*border-box:CSS所指定元素的width和height將border/padding包含在內(實際元素大小(被壓縮)+border/padding大小)*/
+            background: #ffc600;
+            font-family: 'helvetica neue';
+            font-size: 20px;
+            font-weight: 200;
+        }
+        
+        body {
+            margin: 0;
+        }
+        
+        *,
+        *:before,
+        *:after {
+            box-sizing: inherit;
+        }
+        
+        .panels {
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            /*這個設為flex container*/
+            flex-direction: row;
+            /*使子items(.panel)按container主軸橫向分佈*/
+        }
+        
+        .panel {
+            background: #6B0F9C;
+            box-shadow: inset 0 0 0 5px rgba(255, 255, 255, 0.1);
+            color: white;
+            text-align: center;
+            align-items: center;
+            /* Safari transitionend event.propertyName === flex */
+            /* Chrome + FF transitionend event.propertyName === flex-grow */
+            transition: font-size 0.7s cubic-bezier(0.61, -0.19, 0.7, -0.11), flex 0.7s cubic-bezier(0.61, -0.19, 0.7, -0.11), background 0.2s;
+            font-size: 20px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            /*使子items對齊*/
+            flex-direction: column;
+            /*使子items(p)按container主軸垂直向分佈*/
+            flex-grow: 1;
+            /*使子items按container為1比例的伸展值去填滿container*/
+        }
+        
+        .panel1 {
+            background-image: url(https://source.unsplash.com/gYl-UtwNg_I/1500x1500);
+        }
+        
+        .panel2 {
+            background-image: url(https://source.unsplash.com/rFKUFzjPYiQ/1500x1500);
+        }
+        
+        .panel3 {
+            background-image: url(https://images.unsplash.com/photo-1465188162913-8fb5709d6d57?ixlib=rb-0.3.5&q=80&fm=jpg&crop=faces&cs=tinysrgb&w=1500&h=1500&fit=crop&s=967e8a713a4e395260793fc8c802901d);
+        }
+        
+        .panel4 {
+            background-image: url(https://source.unsplash.com/ITjiVXcwVng/1500x1500);
+        }
+        
+        .panel5 {
+            background-image: url(https://source.unsplash.com/3MNzGlQM7qs/1500x1500);
+        }
+        /* Flex Children */
+        
+        .panel>* {
+            margin: 0;
+            width: 100%;
+            transition: transform 0.5s;
+            flex: 1 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .panel p {
+            text-transform: uppercase;
+            font-family: 'Amatic SC', cursive;
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.72), 0 0 14px rgba(0, 0, 0, 0.45);
+            font-size: 2em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+        }
+        
+        .panel p:nth-child(1) {
+            transform: translateY(-100%);
+        }
+        /*一開始*/
+        
+        .panel.open p:nth-child(1) {
+            transform: translateY(0%);
+        }
+        /*有active時*/
+        
+        .panel p:nth-child(3) {
+            transform: translateY(+100%);
+        }
+        /*一開始*/
+        
+        .panel.open p:nth-child(3) {
+            transform: translateY(0%);
+        }
+        /*有active時*/
+        
+        .panel p:nth-child(2) {
+            font-size: 4em;
+        }
+        
+        .panel.open {
+            font-size: 40px;
+            flex-grow: 5;
+        }
+    </style>
+
+
+    <div class="panels">
+        <div class="panel panel1">
+            <p>Hey</p>
+            <p>Let's</p>
+            <p>Dance</p>
+        </div>
+        <div class="panel panel2">
+            <p>Give</p>
+            <p>Take</p>
+            <p>Receive</p>
+        </div>
+        <div class="panel panel3">
+            <p>Experience</p>
+            <p>It</p>
+            <p>Today</p>
+        </div>
+        <div class="panel panel4">
+            <p>Give</p>
+            <p>All</p>
+            <p>You can</p>
+        </div>
+        <div class="panel panel5">
+            <p>Life</p>
+            <p>In</p>
+            <p>Motion</p>
+        </div>
+    </div>
+
+    <script>
+        let panles = document.querySelectorAll(".panel");
+        //console.dir(panles);
+        //console.log(panles); //NodeList(5) 類陣列(但它不是陣列，用於保存一組有序的節點物件)-->HTMLCollection:只收集element 節點
+        //console.log(...panles); //把它展開，成獨立個別物件
+        //console.log([...panles]); //放進array裡就從類陣列變成陣列
+        /*NodeList物件的獨特之處在於，它實際上是基於DOM結構動態執行查詢的結果，因此DOM結構的變化能夠自動反映在NodeList物件中;
+        但透過 document.querySelector / document.querySelectorAll 取得的 NodeList 是靜態的。*/
+
+
+        /*---------------------------------------------------------------------------------------forEach()執行時裡面可能發生的事
+             
+        function callback(currentValue,currentIndex,listObj){
+        // do something
+        };
+        
+        //陣列只被允許用dot去access data of properties。
+        NodeList.prototype.forEach = function(callback) {
+        
+        //The foor loop won't have it's own execution context.
+        //Always remember only function invocation creates a new execution context and 
+          creates memory space for it's own local variables and parameters.
+        
+        for(let i = 0; i < this.length; i++) { //block statement  not execution context
+        //"this" is point to NodeList.
+            
+            callback(this[i], i, this);//this-->當下執行我(function)的外層物件
+        
+        }};            
+         
+        NodeList.forEach(callback);//invoke and initialize forEach funtion context and passing reference of callback into funtion context
+       
+       ----------------------------------------------------------------------------------------------------------------------*/
+
+        /*--------------------------------------------------------------------------------------block statement with declare
+        function foo() {
+            {>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>These variables are not local to the this block.
+              
+              var a = 'var';
+              
+              {-----------------------------------here is a block scope.
+                  let a = 'let';
+                  console.log(a);  // let
+              }-----------------------------------
+            
+            }>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+           
+            console.log(a);  // var
+        }
+        foo();
+        console.log(a);//a is not defined.
+           
+        -------------------------------------------------------------------------------------------------------------------*/
+
+
+
+
+
+
+        //classList.add();新增
+        //classList.remove();移除
+        //classList.toggle();切換
+        //panles.addEventListener : without looping through every element, addEventListener is not working on NodeList
+
+        panles.forEach(panle => { //同步callBack
+
+            //console.dir(panle); //div.panel.panel1(節點物件,HTMLDivElement 實例)
+            panle.addEventListener('click', e => { //不同步callBack //直到使用者按下click之前，event會一直在web api裡等待。
+
+                panle.classList.toggle('open'); //panle上沒有open就添加open;有open就拿掉open
+
+            })
+        });
+        //parameters:傳入參數定義名稱;初始值是undefined;在函式定義時，並沒有辦法直接限定傳入參數的資料類型，ES6語法可以指定。
+        //arguments:實際傳入參數值。
+        //是arguments的排序與資料類型來指定parameters的排序與資料類型。
+        panles.forEach(panle => {
+            panle.addEventListener('transitionend', e => {
+                    if (e.propertyName !== 'font-size') return;
+                    panle.classList.toggle('open-active');
+                }
+
+            )
+        });
+    </script>
+
+
+
+</body>
+
+</html>

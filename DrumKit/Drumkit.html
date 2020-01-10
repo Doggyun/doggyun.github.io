@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<!--假設這層html裝了eventListener-->
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>JS Drum Kit</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<!--假設這層body裝了eventListener-->
+
+<body>
+    <!--瀏覽器會把html轉成Dom object讓我們可以用js操作-->
+    <!--按下A鍵，找到65號的DOM物件，來操作它的style。-->
+
+    <!--假設這層div "keys" 也裝了eventListener-->
+    <div class="keys">
+
+        <div data-key="65" class="key">
+            <kbd>A</kbd>
+            <span class="sound">clap</span>
+        </div>
+
+        <!--還有這層div "83" 也裝了eventListener,點擊這層,那誰的事件會先執行呢?-->
+        <div data-key="83" class="key">
+
+            <kbd>S</kbd>
+            <span class="sound">hihat</span>
+        </div>
+        <div data-key="68" class="key">
+            <kbd>D</kbd>
+            <span class="sound">kick</span>
+        </div>
+        <div data-key="70" class="key">
+            <kbd>F</kbd>
+            <span class="sound">openhat</span>
+        </div>
+        <div data-key="71" class="key">
+            <kbd>G</kbd>
+            <span class="sound">boom</span>
+        </div>
+        <div data-key="72" class="key">
+            <kbd>H</kbd>
+            <span class="sound">ride</span>
+        </div>
+        <div data-key="74" class="key">
+            <kbd>J</kbd>
+            <span class="sound">snare</span>
+        </div>
+        <div data-key="75" class="key">
+            <kbd>K</kbd>
+            <span class="sound">tom</span>
+        </div>
+        <div data-key="76" class="key">
+            <kbd>L</kbd>
+            <span class="sound">tink</span>
+        </div>
+    </div>
+    <!--這是播放器標籤-->
+    <!--<audio controls data-key="65" src="sounds/clap.wav">拿掉controls，使用者介面就會被隱藏起來了</audio>-->
+    <!--key code 每個按鍵都有對應的鍵碼-->
+    <!--按下A鍵，65號的聲音要播放。-->
+    <audio data-key="65" preload="metadata" src="sounds/clap.wav"></audio>
+    <audio data-key="83" preload="metadata" src="sounds/hihat.wav"></audio>
+    <audio data-key="68" preload="metadata" src="sounds/kick.wav"></audio>
+    <audio data-key="70" preload="metadata" src="sounds/openhat.wav"></audio>
+    <audio data-key="71" preload="metadata" src="sounds/boom.wav"></audio>
+    <audio data-key="72" preload="metadata" src="sounds/ride.wav"></audio>
+    <audio data-key="74" preload="metadata" src="sounds/snare.wav"></audio>
+    <audio data-key="75" preload="metadata" src="sounds/tom.wav"></audio>
+    <audio data-key="76" preload="metadata" src="sounds/tink.wav"></audio>
+
+    <script>
+        //使用者的行為是怎麼影響頁面上的元素 
+        /* 關於event Flow (Capturing & AT_TARGET & Bubbling) 網頁元素接收事件的順序
+        1. 先捕獲再冒泡。
+        2. EventTarget.addEventListener() -- - > 第三參數預設值是fault， 代表把這個 listener 添加到冒泡階段
+        3. e.stopPropagation(): 你加在哪層addEventListener，事件的傳遞就斷在哪裡，不會再把事件傳遞給下一個節點(但對於同個層級的listener還是會執行傳遞)。
+        4. e.stopImmediatePropagation():想讓同個層級的(同一個節點上有不只一個 listener)也不要執行傳遞則改用這個。
+        5. e.preventDefault() 取消瀏覽器預設行為。
+        6. e.path() 它表示從e.target到window所經歷到元素層級。
+        7. e.eventPhase 階段。
+        8. e.target = 滑鼠點擊的目標DOM物件 = 對觸發事件的物件的引用 = 事件Listener的實際觸發者。
+        9. e.currentTarget = 事件監聽註冊的目標Dom物件 = 引用事件handler附加到的物件 = 誰正在處理這個事件 = this。
+        10. 某些事件類型天生不支持事件Bubbling。
+        11. 最常見的應用是事件代理（Delegation）:透過父節點來總處理子節點的事件，就叫做事件代理。
+        12. AT_TARGET:當事件傳遞到點擊的物件(e.target)，e.eventPhase就會變成AT_TARGET，就沒有捕獲跟冒泡之分，所以執行順序就會根據你寫的addEventListener的順序而定。 
+       
+        ----------------------------------------------------------------------------------------------------------------------------------*/
+       
+       
+        //DOMContentLoaded完成後，audio做了什麼事。
+        /* document.addEventListener("DOMContentLoaded", e => { //load事件是網頁加載完成後觸發
+             const audio = document.querySelectorAll("audio");
+             console.log(audio);
+             audio.forEach((m) => {
+                 m.addEventListener("loadstart", e => {
+                     console.log(`loadstart:客戶端開始請求數據;buffer:${m.buffered.length};duration:${m.duration};readyState:${m.readyState};paused:${m.paused}`);
+
+                 });
+                 m.addEventListener("durationchange", e => {
+                     console.log(`durationchange:加載部分 metadata，包含音檔總時間，在這個事件之前 duration 都是 NaN;buffer:${m.buffered.length};duration:${m.duration};readyState:${m.readyState};paused:${m.paused}`);
+                     //當data開始加載時，會創建表示媒體播放時間的範圍
+                 });
+                 m.addEventListener("loadedmetadata", e => {
+                     console.log(`loadedmetadata:所有 metadata 加載完畢;buffer:${m.buffered.length};duration:${m.duration};readyState:${m.readyState};paused:${m.paused}`);
+
+                 });
+                 m.addEventListener("loadeddata", e => {
+                     console.log(`loadeddata:收到音檔的第一個 bit 時觸發，但還沒準備好播放;buffer:${m.buffered.length};duration:${m.duration};readyState:${m.readyState};paused:${m.paused}`);
+
+                 });
+
+             });
+
+
+         });*/
+
+        //function宣告的目的在於告訴complier關於函式的名稱、傳回值的資料型態，以及傳遞引數等訊息，這些訊息可以讓complier預先知道函式將如何運作。
+        (function() { //play music
+
+
+            window.addEventListener("keydown", e => {
+
+                //console.log(e); //只要按下Keyboard上隨意一個鍵，就會傳KeyboardEvent物件的值給function; 
+
+                //querySelector()的字串參數是CSS 語法 //有data-key="e.keyCode"屬性的audio標籤
+                const audio2 = document.querySelector(`audio[data-key="${e.keyCode}"]`); // Attribute selectors（CSS屬性選取器）。
+                //console.log(audio2);//<audio data-key="65" src="sounds/clap.wav"></audio>
+                //console.dir(audio2); //播放器物件 (HTMLMediaElement 實例) 
+                //console.log(audio2);//選到預設以外的keyCode則null
+
+                if (!audio2) return;
+
+                //console.log(`最初Audio值:currentTime:${audio2.currentTime}s;buffer:${audio2.buffered.length};duration:${audio2.duration};readyState:${audio2.readyState};paused:${audio2.paused}`);
+               /* audio2.addEventListener("seeking", e => {
+                    console.log(`seeking:跳躍操作開始;currentTime:${audio2.currentTime}s;buffer:${audio2.buffered.length};duration:${audio2.duration};readyState:${audio2.readyState};paused:${audio2.paused}`);
+
+                });
+                audio2.addEventListener("seeked", e => {
+                    console.log(`seeked:跳躍操作完成;currentTime:${audio2.currentTime}s;buffer:${audio2.buffered.length};duration:${audio2.duration};readyState:${audio2.readyState};paused:${audio2.paused};`);
+
+                });
+                audio2.addEventListener("loadstart", e => {
+                    console.log(`loadstart:客戶端開始請求數據;buffer:${audio2.buffered.length};duration:${audio2.duration};readyState:${audio2.readyState};paused:${audio2.paused}`);
+
+                });
+                audio2.addEventListener("durationchange", e => {
+                    console.log(`durationchange:加載部分 metadata，包含音檔總時間，在這個事件之前 duration 都是 NaN;buffer:${audio2.buffered.length};duration:${audio2.duration};readyState:${audio2.readyState};paused:${audio2.paused}`);
+                    //當data開始加載時，會創建表示媒體播放時間的範圍
+                });
+                audio2.addEventListener("loadedmetadata", e => {
+                    console.log(`loadedmetadata:所有 metadata 加載完畢;buffer:${audio2.buffered.length};duration:${audio2.duration};readyState:${audio2.readyState};paused:${audio2.paused}`);
+
+                });
+                audio2.addEventListener("loadeddata", e => {
+                    console.log(`loadeddata:加載了一些數據，音檔的當前幀已加載完畢;buffer:${audio2.buffered.length};duration:${audio2.duration};readyState:${audio2.readyState};paused:${audio2.paused}`);
+
+                });
+                audio2.addEventListener("progress", e => {
+                    console.log(`progress:客戶端正在請求數據，瀏覽器緩衝下載中，已下載的總計信息: ${audio2.buffered.length};duration:${audio2.duration};readyState:${audio2.readyState};;paused:${audio2.paused}`);
+
+                });
+                audio2.addEventListener("canplay", e => {
+                    console.log(`canplay:下載的音檔資料量足以開始播放時觸發，仍尚未完全載完;buffer:${audio2.buffered.length};duration:${audio2.duration};readyState:${audio2.readyState};paused:${audio2.paused}`);
+
+                });
+                audio2.addEventListener("canplaythrough", e => {
+                    console.log(`canplaythrough:可播放音檔，估計在不停下來進行緩衝的情況下，有足夠的數據可以播放音檔直到結束;currentTime:${audio2.currentTime}s;buffer:${audio2.buffered.length};duration:${audio2.duration};readyState:${audio2.readyState};paused:${audio2.paused}`);
+
+                });
+                audio2.addEventListener("suspend", e => {
+                    console.log("suspend:音檔文件下載暫停");
+                });
+
+                audio2.addEventListener("timeupdate", e => {
+
+                    //currentTime 屬性改變時觸發，每 250 ms 觸發一次。
+
+                    let range = [];
+                    for (let i = 0; i < audio2.buffered.length; i++) {
+                        range.push([
+                            audio2.buffered.start(i), //i是index
+                            audio2.buffered.end(i)
+                        ]);
+
+                    };
+                    console.log(`timeupdate:currentTime改變成: ${audio2.currentTime}s;buffer:${audio2.buffered.length};duration:${audio2.duration};readyState:${audio2.readyState};paused:${audio2.paused}`);
+                    //console.log(range); //時間範圍緩衝片段
+                });
+
+
+                audio2.addEventListener("playing", e => {
+                    console.log(`playing:由於缺少數據而被暫停或延遲後準備開始播放: ${audio2.currentTime}s;buffer:${audio2.buffered.length};duration:${audio2.duration};readyState:${audio2.readyState};且此時paused狀態: ${audio2.paused}`);
+
+                });
+                audio2.addEventListener("pause", e => {
+                    console.log(`pause:buffer:${audio2.buffered.length};duration:${audio2.duration};音頻暫停，paused: ${audio2.paused}，時間:${audio2.currentTime}s`); //
+                });
+                audio2.addEventListener("play", e => {
+                    console.dir(audio2);
+                    console.log(`play:當paused屬性從true轉變為false;時間:${audio2.currentTime}s;buffer:${audio2.buffered.length};duration:${audio2.duration};readyState:${audio2.readyState};paused:${audio2.paused}`);
+
+                });
+
+                audio2.addEventListener("waiting", e => {
+                    let a = Date.now(); //從 1970/01/01 00:00:00 UTC 開始計數到這程式執行時間，以毫秒為單位 //會受系統程序執行阻塞的影響，比較不精準。
+                    let b = performance.now(); //從 page load 的時候從零開始計數到這程式執行時間，以毫秒為單位。
+                    console.log(e.timeStamp); //瀏覽器創建事件的時間
+                    console.log(a);
+                    console.log(b);
+                    console.log(`waiting:當播放因暫時缺少數據阻塞;buffer:${audio2.buffered.length};duration:${audio2.duration};readyState:${audio2.readyState};currentTime:${audio2.currentTime}s:paused:${audio2.paused}`);
+                    console.dir(audio2);
+                });
+
+                audio2.addEventListener("ended", e => {
+                    console.log(`ended:音檔播放結束:${audio2.currentTime}`);
+
+                });*/
+
+               
+                audio2.currentTime = 0; //讓audio從0s播放音檔
+
+                //audio2.load(); //中斷所有進行中的事件，重新進行音源選擇、加載、準備從頭播放。
+
+                //console.log(`buffer:${audio2.buffered.length};duration:${audio2.duration};readyState:${audio2.readyState};paused:${audio2.paused}`);
+
+                //執行play()，paused的狀態會從預設的true轉變成false 
+                let play = audio2.play(); //request音檔 //play()是不同步並且回傳Promise
+                //console.log(play); //{<pending>}進行中 "pending" undefined 
+                //console.log(`執行paly()後:currentTime:${audio2.currentTime}s;buffer:${audio2.buffered.length};duration:${audio2.duration};readyState:${audio2.readyState};paused:${audio2.paused}`);
+                          
+                //play's Promise which is resolved when playback has been successfully started
+                play.then(() => { //state為resolved時就異步執行匿名function。 //request成功
+                    console.log(`Promise已實現:currentTime:${audio2.currentTime}s;buffer:${audio2.buffered.length};duration:${audio2.duration};readyState:${audio2.readyState};paused:${audio2.paused}`);
+                    console.log(audio2.currentTime);
+                    console.log(play); //{<resolved>} "resolved" undefined
+                })
+
+                /*播放器的屬性
+                readState屬性:獲取當前媒體文件的加載程度
+                buffered.length屬性:return TimeRanges物件;紀錄有多少個緩衝片段，也可以說音檔data加載時，產生了多少打斷事件
+                */
+
+
+
+                /*這樣寫會拋出錯誤，音檔無法播放。
+                audio.play();
+                console.log(`執行play()後:currentTime:${audio.currentTime}s;buffer:${audio.buffered.length};duration:${audio.duration};paused:${audio.paused}`);
+                audio.pause(); //The play() request was interrupted by a call to pause(). interrupts audio loading because it is not ready yet. 
+                console.log(`執行pause()後:currentTime:${audio.currentTime}s;buffer:${audio.buffered.length};duration:${audio.duration};paused:${audio.paused}`);
+                */
+
+                /*這裡是練習event Flow的測試
+                console.log(e.currentTarget); //Window {postMessage: ƒ, blur: ƒ, focus: ƒ, close: ƒ, parent: Window, …}
+                console.log(e.target); //<body>...</body>
+                console.log(e.path); //陣列[body, html, document, Window]
+                console.log(e.eventPhase); //3 BUBBLING_PHASE
+                console.log("1");
+                */
+            });
+
+
+            //dom style
+            window.addEventListener("keydown", e => {
+                const style = document.querySelector(`div[data-key="${e.keyCode}"]`);
+                if (!style) return; //null
+                style.classList.add("playing");
+
+                /*這裡是練習event Flow的測試
+                    console.log(e.eventPhase); //3 BUBBLING_PHASE
+                    console.log("2");*/
+
+
+            });
+
+
+
+            window.addEventListener("keyup", e => {
+                const style = document.querySelector(`div[data-key="${e.keyCode}"]`);
+                if (!style) return; //null
+                style.classList.remove("playing");
+
+
+                /* 這裡是練習event Flow的測試
+                 console.log(e.eventPhase); //3 BUBBLING_PHASE
+                 console.log("3");*/
+
+
+            });
+
+            //觸發addEventListener的事件的執行順序:1-> 2-> 3
+
+            /*什麼是緩衝buffer
+            串流媒體技術就是把影像和聲音data經過壓縮處理後上傳server，讓使用者
+            一邊下載一邊收聽或觀看，而不用等整個壓縮文件下載到自己的電腦上才可以
+            觀看的網路傳輸技術;該技術會在client端的電腦上創建一個緩衝區，在播放前
+            預先下載一段數據做為緩衝(存入記憶體)，網路不穩不可預測，播放
+            程式就會去用一小段緩衝區內的數據，這樣可以避免播放的不流暢與中斷。 
+            */
+
+            /*Audio Preload屬性(attribute)
+            none:告訴瀏覽器，使用者使用媒體前，網頁加載時先不緩衝任何data
+            metadata:告訴瀏覽器，使用者使用媒體前，網頁加載時先緩衝媒體的metadata
+            auto:告訴瀏覽器，使用者使用媒體前，網頁加載時先緩衝整個媒體(套用瀏覽器預設行為，各家都不一樣)
+            */
+
+            /* 什麼是metadata
+            描述data本身的副data，像是曲名、作者、時長等相關資訊。
+            */
+
+            /*audio與web audio api差異:
+            audio:
+            1.簡單地控制音頻的播放操作。
+            web audio api AudioContext :
+            1.音頻合成。
+            2.進行混音、音效、平移等各種複雜的音頻處理功能的開發。
+            3.遊戲或互動應用中的環繞音效。
+            4.可視化音頻。
+            */
+
+
+        }());
+    </script>
+
+
+</body>
+
+</html>

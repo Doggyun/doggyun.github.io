@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>HTML5 Canvas</title>
+</head>
+
+<body>
+    <canvas id="draw" width="800" height="800"></canvas>
+    <script>
+        const canvas = document.querySelector('#draw');
+
+        //console.log(canvas); //<canvas id="draw" width="982" height="625"></canvas>
+        //console.log(typeof(canvas)); //object
+        //console.dir(canvas); //canvas#draw(HTMLCanvasElement 實例)
+        //console.log(canvas.height); //800
+        //console.log(typeof(canvas.height)); //number
+
+        /*這裡解釋js傳值與傳參考的差別
+        var a=1;
+        var b=a;//1(copyed value form a to b.)
+        console.log(a===b) //true a與b各自獨立擁有1值。
+
+        var a={a:1};
+        var b=a;(copyed address form a to b.)
+        console.log(a===b);//true a與b各自獨立擁有一樣的address值指向同個物件。
+         */
+
+
+        //using the dot notation access to an object's properties.
+        //properties is similar to variables,but they are different,I'm always confused.
+        //if method has a reference to a Function instance as its value,it is simply a property that can be called
+        canvas.height = window.innerHeight; //設定畫布與window同高/
+
+        //console.log(canvas.height); //625
+        //console.log(window.innerHeight); //625
+        //console.log(canvas === window); //false
+        //console.log(canvas.height === window.innerHeight); //true 
+
+        canvas.width = window.innerWidth; //設定畫布與window同寬
+        const context = canvas.getContext('2d'); //2d畫布
+        //console.log(typeof(canvas.getContext('2d'))); //object
+        //console.log(typeof(context)); //object
+        //console.dir(context); //CanvasRenderingContext2D 物件
+
+        context.strokeStyle = '#BADA55';
+
+        //console.log(typeof(context.strokeStyle)); //string
+
+        context.lineJoin = 'round'; //線交接
+        context.lineCap = 'round'; //線帽
+        context.lineWidth = 30; //線寬
+
+
+
+        /* 這裡解釋傳值傳址的多種情況----------------------------------------------------------------------------------------------------------
+        function b() {// b function context
+                     
+                     //myLet here is the same as outter myLet 
+                     myLet=3;
+                     console.log(myLet);//3
+                 };
+
+        function a() {// a function context
+                     let myLet = 2;//重新定義了一個local新的myLet空間與變數與作用域;與global context的myLet同名但不同域不同的記憶體位置(?)。
+                     console.log(myLet);//2
+                     b();
+                     console.log(myLet);//2
+                 };
+        let myLet = 1;
+        a();
+        console.log(myLet); //3 
+            
+         */
+
+        /*------------------------------------------------------------------------------------------------------------------passing by value
+        function a(one,two){ //one,two variable exists only inside own function,have a new space in memory.
+            one = 100;//初始值是10 
+            two = 200; 
+            console.log("oneIs =" + one +"twoIs =" +two); //oneIs =100 twoIs =200 
+        };
+        
+        let one = 10; 
+        let two = 20; 
+       
+        console.log("oneIs =" + one +"twoIs =" +two); //oneIs =10 twoIs =20   
+        a(one, two); 
+        console.log("oneIs =" + one +"twoIs =" +two); //oneIs =10 twoIs =20      
+        ----------------------------------------------------------------------------------------------------------------------------------*/
+
+        /*--------------------------------------------------------------------------------------------------------------passing by reference
+
+        function a(varObj) { //varObj(就算跟let varObj同名) variable exists only inside own function,have a new space in memory. 
+             varObj.a = 100; 
+             console.log(varObj);//{a:100} 
+        } 
+        let varObj = {a:1};
+
+        console.log(varObj);//{a:1}
+        a(varObj); ex:00x1 
+
+        console.log(varObj);//{a:100}
+
+        ----------------------------------------------------------------------------------------------------------------------------------*/
+        /*
+        let a=1;
+
+        function b(e){    
+        a={c:e};
+        };
+        
+        b(a); //passing by value
+        console.log(a);//{c:1}
+        ---------------------------------------------------------------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+        let isDrawing = false;
+        let startPoint = {
+            x: 0,
+            y: 0
+        };
+
+        let hsl = 0; //HSL色彩:色相角度
+
+        /*
+        瀏覽器有自己的座標系統(單位px)，不同於我所知的數學座標系統，座標系統原點(0,0)在瀏覽器可視區左上角，皆為正值，負值在螢幕之外；
+        而canvas畫布2D座標系統等同於瀏覽器座標系統，它另有3D座標系統。
+        */
+
+        canvas.addEventListener('mousedown', e1 => { //只要滑鼠有點擊就觸發(點擊觸發)
+            //console.log(e1); 
+            console.log("點擊滑鼠左鍵");
+            isDrawing = true; //reassign by true。
+
+            //console.log(e1.currentTarget);//<canvas id="draw" width="1366" height="625"></canvas>
+            //console.log(e1.target);//<canvas id="draw" width="1366" height="625"></canvas>
+            startPoint = { //mousedown時讓startPoint重新引用新物件
+
+                x: e1.offsetX, //獲取鼠標指針位置相對於觸發事件的物件(canvas#draw)的XY座標
+                y: e1.offsetY //還有clientXY,screenXY,pageXY
+            };
+
+        });
+
+
+        canvas.addEventListener('mousemove', e2 => {
+
+            //鼠標在canvas上移動就連續觸發
+            console.log("滑鼠移動");
+
+            if (isDrawing === false) return;
+            if (isDrawing) {
+
+
+
+                context.beginPath(); //讓畫布知道目前要繪製一個全新的路徑(避免和之前的路徑混在一起)
+
+                context.moveTo(startPoint.x, startPoint.y); //路徑的起點
+
+                //兩點之間連成一條路徑
+                context.lineTo(e2.offsetX, e2.offsetY); //路徑的終點
+
+
+                /*測試其他線條的畫法
+                context.moveTo(250, 250);
+                context.lineTo(e2.offsetX, e2.offsetY); 
+                */
+
+                /*測試其他線條的畫法
+                context.moveTo(e2.offsetX, e2.offsetY);
+                context.lineTo(e2.offsetX, e2.offsetY);
+                */
+
+                context.strokeStyle = `hsl(${hsl},100%, 50%,100%)`; //色相環概念(色相角度0~360,飽和度%,色彩亮度%,透明度%)
+
+                if (hsl > 360) { //先檢查如果色相角度>360度就變回0度
+                    hsl = 0;
+                };
+
+                console.log(hsl);
+                context.stroke(); //繪製線條(依據前面的設定才開始繪製線條)
+                hsl++; //遞增運算子 //觸發一次就+1度
+
+                startPoint = { //將這次路徑終點座標設定為下一次的路徑起點座標
+                    x: e2.offsetX,
+                    y: e2.offsetY
+                };
+            };
+        });
+
+        canvas.addEventListener('mouseup', e3 => { //滑鼠按鈕被釋放彈起來時觸發
+            console.log("滑鼠左鍵放開");
+            isDrawing = false;
+            startPoint = {
+                x: 0,
+                y: 0
+            };
+
+        });
+
+        canvas.addEventListener('mouseleave', e4 => {
+            console.log("滑鼠離開畫布");
+            if (isDrawing === false) return;
+        });
+    </script>
+
+    <style>
+        html,
+        body {
+            margin: 0;
+        }
+    </style>
+
+</body>
+
+</html>

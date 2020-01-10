@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Type Ahead 👀</title>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+    <form class="search-form">
+        <input type="text" class="search" placeholder="City or State" v-model="input">
+        <!--使用v-model把input綁定在DOM物件上;改變了Vue實體data中的資料，頁面dom中的值就會被改變，反之亦然；只能在表單元素或Components上使用-->
+
+        <ul class="suggestions">
+            <!--v-show與v-if比較-->
+            <!--v-show不能用在<template>元素-->
+            <p v-show="show">這段是測試</p>
+            <!--使用<template>樣板元素來群組它們-->
+            <template v-if="input"><!--如果input是true，會建立元件，在<template>中的內容才會被顯示;false時則銷毀該元素與綁定的資料 -->
+             <li v-for="place in filterArray "><!--Array迴圈，v-for會將filterArray陣列一筆一筆取出並暫存在place裡，直到迭代結束-->
+               
+                 <span class="name" v-html="heighlight(place)"></span><!--v-html用於更新節點物件的innerHTML。-->
+             </li>       
+            </template>
+
+            <template v-else><!--不需要表達式，input是false時就顯示出這塊<template>中的內容-->
+            <li>Filter for a city</li>
+
+            <li>or a state</li>
+            </template>
+        </ul>
+    </form>
+
+
+    <script>
+        const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+
+        //vue-->數據驅動內容，即所有的一切通過操作數據來進行，而盡量避免操作dom樹
+
+        //帶有$-前綴的屬性與方法是Vue實體用來與Vue實體代理的屬性與方法(ex.data,el)做區別
+        let vm = new Vue({ //選項(option)物件，包含了所有vue實體需要用到的屬性，需要用到再填寫上去就可以了
+            el: '.search-form',
+            data: {
+                cities: [], //初始值
+                input: '', //空字串
+                show: false, //show為false時，html會加上style ="display:none;"隱藏該節點物件的內容
+            },
+
+            //vue的過程階段:vue生命週期到了哪一步就自動去執行對應鉤子函數里面的程式碼
+            beforeCreate: function() { //this指向Vue實例物件vm
+                console.log("實體初始化，$el屬性還未被建立與初始化");
+                console.dir(this); //這裡印出來的this已經是 mounted階段的this了
+                console.log(this.$data); //undefined
+                console.log(this.$el); //undefined
+                //console.log(document.querySelector(".search-form")); //這個時候是虛擬DOM節點
+            },
+            created: function() {
+                console.log("實體完成;$data完成，$el屬性還未被建立與初始化");
+                console.log(this.$data); //{__ob__: Observer}
+                console.log(this.$el); //undefined
+                //console.log(document.querySelector(".search-form")); //這個時候是虛擬DOM節點 
+            },
+
+
+            beforeMount: function() {
+                console.log("掛載之前");
+                console.log(this.$data); //{__ob__: Observer}
+                console.log(this.$el); //<form class="search-form">...</form> //這個時候是虛擬DOM節點
+                //console.log(this.$el === document.querySelector(".search-form")); //true
+                //console.log(document.querySelector(".search-form")); //這個時候是虛擬DOM節點
+            },
+
+
+            mounted: function() { //vue實體已經掛載到true DOM元素中            
+                //console.log(document.querySelector(".search-form")); //這個時候是真實DOM節點
+                //console.log(this.$data); //{__ob__: Observer}
+                //console.log(this.$el); //<form class="search-form">...</form> 虛擬的dom節點被真實的dom節點取代，並將其插入到dom樹中，於是在觸發mounted時，可以獲取到$el為真實的dom元素             　　
+                //console.log(this.$el === document.querySelector(".search-form")); //true
+                fetch(endpoint)
+                    .then(response => response.json())
+                    .then(data => this.cities.push(...data));
+            },
+
+
+
+            computed: { //具有資料緩存的功能，資料會被保存起來(計算結果)，響應式依賴發生改變時才會重新求值，重新執行函式重新渲染畫面，觸發時不需要條件;相比每當觸發重新渲染時，調用methods將總會再次執行函數，造成效能低落
+                //getter
+                filterArray: function() { //filterArray響應式依賴於cities input
+                    return this.cities.filter(place => { //資料過濾  Array[1000]
+
+                        //Vue實體代理(Proxy)了data的所有屬性，因此access this.cities等價於 access this.$data.cities
+                        //console.log(this.cities === this.$data.cities);//true
+
+                        let regex = new RegExp(this.input, 'gi');
+                        return place.city.match(regex) || place.state.match(regex)
+
+                    })
+                }
+            },
+            methods: { //不需要緩存就用methods;與computed還有一個差異是methods帶有參數，會與v-on:事件監聽連用
+                heighlight: function(place) {
+                    let regex = new RegExp(this.input, 'gi');
+                    let cityHight = place.city.replace(regex, `<span class="h1" style="background:#ffc600">${this.input}</span>`);
+                    let stateHight = place.state.replace(regex, `<span class="h1"style="background:#ffc600">${this.input}</span>`);
+                    return `${cityHight},${stateHight}`
+                }
+
+            },
+
+
+            beforeUpdate: function() {
+                console.log("當data變化時被呼叫，還不會渲染畫面");
+                console.log(this.$data); //{__ob__: Observer}
+                console.log(this.$el); //<form class="search-form">...</form>
+
+            },
+            updated: function() {
+                console.log("DOM更新已完成且渲染畫面(必須直到這個階段，才會把最終的結果渲染在瀏覽器上被看到)");
+                console.log(this.$data); //{__ob__: Observer}
+                console.log(this.$el); //<form class="search-form">...</form>
+            },
+
+            /*beforeDestroy: function() {
+                console.log("銷毀前，實體還可以使用");
+                console.log(this.$data);
+                console.log(this.$el);
+            },
+            destroyed: function() {
+                console.log("實體已銷毀，所有綁定被解除，事件監聽被移除，子實體也被銷毀");
+                console.log(this.$data);
+                console.log(this.$el);
+            },*/
+
+
+        });
+        //console.log(vm);
+    </script>
+</body>
+
+</html>
