@@ -5,7 +5,8 @@
 使用者在輸入框中輸入英文字母，找出符合字母的美國city資料，並且把資料的英文字母標識起來。
 ##  **Demo**  ##
 <img src="img/type-ahead-demo.png" width="590" height="200"/>
-##  **相關屬性**     ##
+
+## **相關屬性** ##
 
 **Promise**
 
