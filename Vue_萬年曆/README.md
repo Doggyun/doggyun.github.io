@@ -59,7 +59,7 @@ sundayDate(**Sun Oct 27 2019 00:00:00 GMT+0800** ) = new Date(2019,10,-4)。
 - **設計出來的公式被套用計算後必須是符合參考月曆的曆法排序**。
 
 
-## 公式成功與失敗的條件 :##
+## 公式成功與失敗的條件 : ##
 
 
     let getDate = (this.calendar.date - this.calendar.day) % 7 - 7;  
