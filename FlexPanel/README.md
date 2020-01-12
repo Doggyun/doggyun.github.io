@@ -6,6 +6,8 @@
 ##  **Demo**  ##
 <img src="img/FlexPanel.png" width="600" height="200"/>
 
+[DEMO](https://doggyun.github.io/FlexPanel/FlexPanel.html)
+
 ##  **相關屬性**     ##
 
 **Flex**
