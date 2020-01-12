@@ -6,6 +6,8 @@
 ##  **Demo**  ##
 <img src="img/type-ahead-vue-demo.png" width="590" height="200"/>
 
+[DEMO](https://doggyun.github.io/Vue_TypeAhead/Vue_TypeAhead.html)
+
 ##  **相關屬性**     ##
 
 **V屬性**
