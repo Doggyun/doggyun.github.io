@@ -6,7 +6,7 @@
 ##  **Demo**  ##
 <img src="img/type-ahead-demo.png" width="590" height="200"/>
 
-[DEMO](doggyun.github.io/TypeAhead/TypeAhead.html)
+[DEMO](https://doggyun.github.io/TypeAhead/TypeAhead.html)
 
 ## **相關屬性** ##
 
