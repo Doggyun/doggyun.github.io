@@ -6,6 +6,8 @@
 ##  **Demo**  ##
 <img src="img/drum-kit-demo.png" width="500" height="200"/>
 
+[DEMO](https://doggyun.github.io/DrumKit/Drumkit.html)
+
 ##  **相關屬性**     ##
 
 **Html**
