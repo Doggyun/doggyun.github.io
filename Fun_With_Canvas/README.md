@@ -7,6 +7,8 @@
 ##  **Demo**  ##
 <img src="img/hello.png" width="600" height="250"/>
 
+[DEMO](https://doggyun.github.io/Fun_With_Canvas/Fun_With_Canvas.html)
+
 ##  **canvas**     ##
 
 **相關屬性**
