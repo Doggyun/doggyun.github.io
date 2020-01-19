@@ -6,7 +6,7 @@
 
 **概念**: 懷舊作品。還記得我國小時的國語課本，內容是手繪的插畫風格，以現在的眼光來看，它充滿了的小時候的回憶，因此創作出了這個作品。
 
-[太平臘鼓](https://www.youtube.com/watch?v=0NoClrHms-Y&t=15s) 
+[太平臘鼓](https://github.com/Doggyun/doggyun.github.io/blob/gh-pages/%E8%A8%AD%E8%A8%88/%E6%8F%92%E7%95%AB/%E5%A4%AA%E5%B9%B3%E8%87%98%E9%BC%93.jpg) 
 
 ## 歡迎光臨雲林。 ##
 
