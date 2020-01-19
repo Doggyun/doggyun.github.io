@@ -1,6 +1,6 @@
 ## 我的人生，我自己搭配。 ##
 
-<img src="我的人生，我自己搭配_01.jpg" width="500" height="350"/>
+<img src="我的人生，我自己搭配_01.jpg" width="350" height="250"/>
 
 系列作品。
 
@@ -17,7 +17,7 @@
 
 ##  鏡。 ##
 
-<img src="鏡.jpg" width="500" height="350"/>
+<img src="鏡.jpg" width="350" height="250"/>
 
 系列作品。
 
@@ -31,7 +31,7 @@
 
 ## 階級複製。 ##
 
-<img src="階級複製.jpg" width="380" height="450"/>
+<img src="階級複製.jpg" width="250" height="350"/>
 
 **工具**: Adobe photoshop
 
